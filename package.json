@@ -1,0 +1,24 @@
+{
+    "name": "prj-yob-mappers",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "main": "index.js",
+    "scripts": {
+        "build": "tsc",
+        "dev": "nodemon",
+        "start": "node dist/index.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/node": "^20.10.4",
+        "nodemon": "^3.0.2",
+        "tsx": "^4.6.2",
+        "typescript": "^5.3.3"
+    },
+    "dependencies": {
+        "fast-xml-parser": "^4.3.2"
+    }
+}
