@@ -5,7 +5,7 @@ interface BeerXML {
     RECIPE: {
       NAME: string;
       VERSION: number;
-      TYPE: "extract" | "partial mas" | "all grain";
+      TYPE?: "extract" | "partial mas" | "all grain";
       STYLE: BeerXMLStyle;
       BREWER: string;
       ASST_BREWER?: string;
@@ -13,8 +13,8 @@ interface BeerXML {
       BOIL_SIZE: number; // Volume (liters)
       BOIL_TIME: number; // Minutes
       EFFICIENCY: number; // Percent
-      ALPHA: number;
-      AMOUNT: number;
+      ALPHA?: number;
+      AMOUNT?: number;
       HOPS: BeerXMLHop[];
       FERMENTABLES: BeerXMLFermentable[];
       MISCS: BeerXMLMisc[];
@@ -23,8 +23,8 @@ interface BeerXML {
       NOTES?: string;
       TASTE_NOTES?: string;
       TASTE_RATING?: number;
-      OG: number;
-      FG: number;
+      OG?: number;
+      FG?: number;
       FERMENTATION_STAGES?: number;
       PRIMARY_AGE?: number; // Days
       PRIMARY_TEMP?: number; // Temperature (C)
@@ -41,6 +41,7 @@ interface BeerXML {
       PRIMING_SUGAR_EQUIV?: number; // Weight (kg)
       KEG_PRIMING_FACTOR?: number;
       ABV?: number; // Percent
+      EST_ABV: number;
       EST_COLOR?: string;
       IBU?: number;
     };

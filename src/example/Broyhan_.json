@@ -1,0 +1,82 @@
+{
+    "Rezeptquelle": "www.maischemalzundmehr.de",
+    "ExportVersion": "2.0",
+    "Name": "Broyhan ",
+    "Datum": "28.08.2023",
+    "Sorte": "Sauerbier",
+    "Autor": "sascha1705",
+    "Ausschlagwuerze": 22.5,
+    "Stammwuerze": 12,
+    "Bittere": 15,
+    "Farbe": 10,
+    "Alkohol": 4.2,
+    "Kurzbeschreibung": "Broyhan nach historischem Rezept, die Sch\u00fcttung ist etwas umfangreicher, keine schmeckbare Bittere, gut trinkbar",
+    "Malze": [
+        {
+            "Name": "Pilsner extra hell",
+            "Menge": 1630,
+            "Einheit": "g"
+        },
+        {
+            "Name": "Helles b\u00f6hmisches Tennenmalz",
+            "Menge": 790,
+            "Einheit": "g"
+        },
+        {
+            "Name": "Spitzmalz",
+            "Menge": 470,
+            "Einheit": "g"
+        },
+        {
+            "Name": "Sauermalz",
+            "Menge": 130,
+            "Einheit": "g"
+        },
+        {
+            "Name": "Dunkles b\u00f6hmisches Tennenmalz ",
+            "Menge": 130,
+            "Einheit": "g"
+        }
+    ],
+    "Maischform": "infusion",
+    "Hauptguss": 22.5,
+    "Einmaischtemperatur": 40,
+    "Rasten": [
+        {
+            "Temperatur": 38,
+            "Zeit": 30
+        },
+        {
+            "Temperatur": 65,
+            "Zeit": 30
+        },
+        {
+            "Temperatur": 72,
+            "Zeit": 30
+        }
+    ],
+    "Abmaischtemperatur": 78,
+    "Kochzeit_Wuerze": 60,
+    "Hopfenkochen": [
+        {
+            "Sorte": "Hallertauer Tradition ",
+            "Menge": 15,
+            "Alpha": 6.3,
+            "Zeit": 60,
+            "Typ": "Standard"
+        }
+    ],
+    "Gewuerze_etc": [
+        {
+            "Name": "Szechuanpfeffer",
+            "Menge": 11,
+            "Einheit": "g",
+            "Kochzeit": 0
+        }
+    ],
+    "Hefe": "OGA9",
+    "Gaertemperatur": "17",
+    "Endvergaerungsgrad": 66,
+    "Karbonisierung": 5,
+    "Anmerkung_Autor": "Ich wollte schon lange mal einen historischen Stil brauen. Der Broyhan hatte es mir angetan. \r\nNach einiger Recherche dann dieses Rezept zusammengestellt, wobei es sowohl gehopfte als auch nicht gehopfte Varianten gegeben haben soll.\r\nIch habe mich dann f\u00fcr einen \u201eHybrid\u201c entschieden. Einerseits gehopft, andererseits eine Hommage an die nicht gehopften Varianten durch den Szechuanpfeffer. Es gab wohl auch Versionen mit Zimt, Koriander, Nelke usw. \r\n\r\nDas Original war vermutlich nicht gespundet, ich habe mich trotzdem f\u00fcr 5g co2 entschieden. Kommt insgesamt sehr gut zur Geltung. \r\n\r\nDas Bier hat keinen Nachguss.\r\n\r\nDie erste Rast ist origin\u00e4r als Teigmaische zu sehen. \r\nDas Rezept, wie ich es zur Verf\u00fcgung gestellt habe, ist g\u00e4ngige Infusion. \r\nWer ganz historisch brauen will, stellt seine M\u00fchle ganz fein ein, gibt dann nur so viel Hauptguss dazu, bis er einen Teig hat, und l\u00e4sst die W\u00fcrze im Wasserbad bei 38\u00b0 rasten. \r\nDann kochendes Wasser zubr\u00fchen, bis die angegebenen Temperaturen erreicht sind und jeweils rasten lassen.\r\nMeine M\u00fchle hat mir diese Vorgehensweise nicht erm\u00f6glicht, daher normale Infusion.\r\nWer will, kann den Hopfen weg lassen und gegen diverse Kr\u00e4uter und Gew\u00fcrze austauschen oder den Pfeffer austauschen oder, oder, oder\u2026\r\nAndere deutsche Hopfen passen sicher auch sehr gut ins Bier.\r\n\r\nIch w\u00fcrde mich \u00fcber eure Erfahrungen freuen. \r\n\r\nViel Spa\u00df beim nachbrauen!"
+}

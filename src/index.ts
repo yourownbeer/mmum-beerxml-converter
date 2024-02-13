@@ -1,16 +1,15 @@
 import fs from "fs";
+import { decode } from "html-entities";
 import { XMLBuilder } from "fast-xml-parser";
-
-// read MMuM json file
-const data = fs.readFileSync("./src/example/Bavarian_IPA.json");
-const mmumFile = JSON.parse(data.toString());
-const beerXML = convertMMuMToBeerXML(mmumFile);
-console.log(beerXML);
 
 function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
   const calculateOG = (stammwuerze: number) =>
     1 + stammwuerze / (258.6 - (stammwuerze / 258.2) * 227.1);
 
+  const calculateFG = (og: number, finalAttenuationPercentage: number) =>
+    og * (1 - finalAttenuationPercentage) + finalAttenuationPercentage;
+
+  // Fermentables
   const fermentableEntries = Object.keys(mmum).filter((entryName) =>
     entryName.includes("Malz")
   );
@@ -23,7 +22,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     if (mmum[nameKey] !== undefined && mmum[amountKey] !== undefined) {
       fermentables.push({
         FERMENTABLE: {
-          NAME: mmum[nameKey],
+          NAME: decode(mmum[nameKey]),
           AMOUNT: mmum[amountKey],
         },
       });
@@ -33,13 +32,11 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
   const miscEntries = Object.keys(mmum).filter((entryName) =>
     entryName.includes("WeitereZutat")
   );
+
+  // Misc Gaerung
   const miscGaerungEntries = miscEntries.filter((entryName) =>
     entryName.includes("Gaerung")
   );
-  const miscWuerzeEntries = miscEntries.filter((entryName) =>
-    entryName.includes("Wuerze")
-  );
-
   const amountOGaerungfMisc = miscGaerungEntries.length / 3;
   const gaerungMiscs: BeerXMLMisc[] = [];
   for (let i = 1; i <= amountOGaerungfMisc; i++) {
@@ -54,7 +51,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     ) {
       gaerungMiscs.push({
         MISC: {
-          NAME: mmum[nameKey],
+          NAME: decode(mmum[nameKey]),
           AMOUNT: mmum[amountKey],
           USE: "Primary",
           TIME: mmum[unitKey],
@@ -63,6 +60,10 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     }
   }
 
+  // Misc
+  const miscWuerzeEntries = miscEntries.filter((entryName) =>
+    entryName.includes("Wuerze")
+  );
   const amountWuerzeMisc = miscWuerzeEntries.length / 3;
   const wuerzeMiscs: BeerXMLMisc[] = [];
   for (let i = 1; i <= amountWuerzeMisc; i++) {
@@ -77,7 +78,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     ) {
       wuerzeMiscs.push({
         MISC: {
-          NAME: mmum[nameKey],
+          NAME: decode(mmum[nameKey]),
           AMOUNT: mmum[amountKey],
           USE: "Boil",
           TIME: mmum[unitKey],
@@ -90,11 +91,11 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     entryName.toLowerCase().includes("hopfen")
   );
 
+  // FW Hops
   const vwhHopEntries = hopEntries.filter((entryName) =>
     entryName.includes("VWH")
   );
   const amountOfVwhHops = vwhHopEntries.length / 3;
-
   const vwhHops: BeerXMLHop[] = [];
   for (let i = 1; i <= amountOfVwhHops; i++) {
     const nameKey = `Hopfen_VWH_${i}_Sorte` as keyof typeof mmum;
@@ -108,7 +109,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     ) {
       vwhHops.push({
         HOP: {
-          NAME: mmum[nameKey],
+          NAME: decode(mmum[nameKey]),
           AMOUNT: mmum[amountKey],
           ALPHA: mmum[alphaKey],
           USE: "First Wort",
@@ -117,6 +118,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     }
   }
 
+  // Fluid Hops
   const usualHopEntries = hopEntries.filter((entryName) =>
     entryName.includes("Hopfen_")
   );
@@ -136,7 +138,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     ) {
       usualHops.push({
         HOP: {
-          NAME: mmum[sortKey],
+          NAME: decode(mmum[sortKey]),
           AMOUNT: mmum[amountKey],
           ALPHA: mmum[alphaKey],
           TIME: mmum[timeKey],
@@ -145,6 +147,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     }
   }
 
+  // Dry Hops
   const dryHopEntries = hopEntries.filter((entryName) =>
     entryName.includes("Stopfhopfen_")
   );
@@ -157,7 +160,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     if (mmum[sortKey] !== undefined && mmum[amountKey] !== undefined) {
       dryHops.push({
         HOP: {
-          NAME: mmum[sortKey],
+          NAME: decode(mmum[sortKey]),
           AMOUNT: mmum[amountKey],
           USE: "Dry Hop",
         },
@@ -165,6 +168,16 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     }
   }
 
+  // MashIn Mash Step
+  const mashInMashStep: BeerXMLMashStep = {
+    MASH_STEP: {
+      TYPE: "Infusion",
+      STEP_TEMP: mmum["Infusion_Einmaischtemperatur"],
+      STEP_TIME: 0,
+    },
+  };
+
+  // Decoction Mash Steps
   const decoctionMashStepEntries = Object.keys(mmum).filter((entryName) =>
     entryName.includes("Dekoktion")
   );
@@ -195,19 +208,18 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     }
   }
 
+  // Infusion Rast Mash Steps
   const infusionMashStepEntries = Object.keys(mmum).filter((entryName) =>
     entryName.includes("Infusion_Rast")
   );
   const amountOfInfusionMashSteps = infusionMashStepEntries.length / 2;
   const infusionMashSteps: BeerXMLMashStep[] = [];
   for (let i = 1; i <= amountOfInfusionMashSteps; i++) {
-    const tempKey = `Infusion_Rasttemperatur${i}` as keyof typeof mmum;
-    const stepTempKey = `Infusion_Einmaischtemperatur` as keyof typeof mmum;
+    const stepTempKey = `Infusion_Rasttemperatur${i}` as keyof typeof mmum;
     const stepTimeKey = `Infusion_Rastzeit${i}` as keyof typeof mmum;
     const infuseAmountKey = `Nachguss` as keyof typeof mmum;
 
     if (
-      mmum[tempKey] !== undefined &&
       mmum[stepTempKey] !== undefined &&
       mmum[stepTimeKey] !== undefined &&
       mmum[infuseAmountKey] !== undefined
@@ -215,7 +227,6 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
       infusionMashSteps.push({
         MASH_STEP: {
           TYPE: "Infusion",
-          TEMP: mmum[tempKey],
           STEP_TEMP: mmum[stepTempKey],
           STEP_TIME: mmum[stepTimeKey],
           INFUSE_AMOUNT: mmum[infuseAmountKey],
@@ -224,6 +235,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     }
   }
 
+  // Abmaisch Mash Step
   const endMashStep: BeerXMLMashStep = {
     MASH_STEP: {
       TYPE: "Temperature",
@@ -232,26 +244,30 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     },
   };
 
+  const og = calculateOG(mmum.Stammwuerze);
+  const fg = calculateFG(og, Number(mmum.Endvergaerungsgrad) / 100);
+
   const beerxml_json: BeerXML = {
     RECIPES: {
       RECIPE: {
         NAME: mmum.Name,
+        VERSION: 1, // always set to 1
         DATE: mmum.Datum,
         STYLE: {
           NAME: mmum.Sorte,
         },
-        VERSION: 1, // always set to 1
         BREWER: mmum.Autor,
         BATCH_SIZE: mmum.Ausschlagswuerze,
         BOIL_SIZE: mmum.Infusion_Hauptguss,
         EFFICIENCY: mmum.Sudhausausbeute,
-        ABV: mmum.Alkohol,
+        EST_ABV: mmum.Alkohol,
         EST_COLOR: mmum.Farbe,
         TASTE_NOTES: mmum.Kurzbeschreibung, // laut php code ist es TASTE_NOTEs, vielleicht doch NOTES?
         NOTES: mmum.Anmerkung_Autor, // Vielleicht tauschen?
         CARBONATION: Number(mmum.Karbonisierung),
         IBU: mmum.Bittere,
-        OG: calculateOG(mmum.Stammwuerze),
+        OG: og,
+        FG: fg,
         FERMENTABLES: fermentables,
         MISCS: [...wuerzeMiscs, ...gaerungMiscs],
         BOIL_TIME: mmum.Kochzeit_Wuerze,
@@ -259,6 +275,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
         MASH: {
           VERSION: 1,
           MASH_STEPS: [
+            mashInMashStep,
             ...decoctionMashSteps,
             ...infusionMashSteps,
             endMashStep,
@@ -271,6 +288,8 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
               MIN_TEMPERATURE: Number(mmum.Gaertemperatur.split("-")[0]),
               MAX_TEMPERATURE: Number(mmum.Gaertemperatur.split("-")[1]),
               ATTENUATION: Number(mmum.Endvergaerungsgrad),
+              AMOUNT: 1,
+              AMOUNT_IS_WEIGHT: true,
             },
           },
         ],
@@ -280,7 +299,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
 
   const builder = new XMLBuilder({ oneListGroup: true, format: true });
   const beerxml = builder.build(beerxml_json);
-  fs.writeFileSync("./src/example/output/Bavarian_IPA.xml", beerxml, "utf8");
+  fs.writeFileSync(outputFolder + file + ".xml", beerxml, "utf8");
 
   return beerxml_json;
 }
@@ -297,5 +316,15 @@ function convertMMuMToBeerXML(mmum: MMuM_V1 | MMuM_V2): BeerXML {
     return convertV2ToBeerXML(mmum as MMuM_V2);
   }
 }
+
+// read MMuM json file
+const inputFolder = "./src/example/";
+const file = "Bavarian_IPA";
+const outputFolder = "./src/example/output/";
+
+const data = fs.readFileSync(inputFolder + file + ".json");
+const mmumFile = JSON.parse(data.toString());
+const beerXML = convertMMuMToBeerXML(mmumFile);
+console.log(beerXML);
 
 module.exports = convertMMuMToBeerXML;
