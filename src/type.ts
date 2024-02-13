@@ -120,7 +120,7 @@ interface BeerXMLMisc {
     VERSION?: number;
     TYPE?: "spice" | "fining" | "water agent" | "herb" | "flavor" | "other";
     USE: "Boil" | "Mash" | "Primary" | "Secondary" | "Bottling";
-    TIME: number; // Minutes
+    TIME?: number; // Minutes
     AMOUNT: number; // Weight (kg) or Volume (liters)
     AMOUNT_IS_WEIGHT?: boolean;
     USE_FOR?: string;
