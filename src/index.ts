@@ -2,47 +2,45 @@ import fs from "fs";
 import { decode } from "html-entities";
 import { XMLBuilder } from "fast-xml-parser";
 
+const calculateOG = (stammwuerze: number) =>
+  1 + stammwuerze / (258.6 - (stammwuerze / 258.2) * 227.1);
+
+const calculateFG = (og: number, finalAttenuationPercentage: number) =>
+  og * (1 - finalAttenuationPercentage) + finalAttenuationPercentage;
+
 function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
-  const calculateOG = (stammwuerze: number) =>
-    1 + stammwuerze / (258.6 - (stammwuerze / 258.2) * 227.1);
+  function extractFermentables(mmum: MMuM_V1): BeerXMLFermentable[] {
+    return Object.keys(mmum)
+      .filter((key) => key.startsWith("Malz") && !key.includes("_"))
+      .map((baseKey) => {
+        const nameKey = baseKey as keyof typeof mmum;
+        const amountKey = `${baseKey}_Menge` as keyof typeof mmum;
+        const unitKey = `${baseKey}_Einheit` as keyof typeof mmum;
 
-  const calculateFG = (og: number, finalAttenuationPercentage: number) =>
-    og * (1 - finalAttenuationPercentage) + finalAttenuationPercentage;
+        const name = mmum[nameKey];
+        const amountRaw = mmum[amountKey];
+        const unit = mmum[unitKey];
 
-  // Fermentables
-  const fermentables: BeerXMLFermentable[] = [];
-
-  const fermentableEntries = Object.keys(mmum).filter((entryName) =>
-    entryName.includes("Malz")
-  );
-  const amountOfFermentables = fermentableEntries.length / 3;
-  for (let i = 1; i <= amountOfFermentables; i++) {
-    const nameKey = `Malz${i}` as keyof typeof mmum;
-    const amountKey = `Malz${i}_Menge` as keyof typeof mmum;
-    const unitKey = `Malz${i}_Einheit` as keyof typeof mmum;
-
-    if (
-      mmum[nameKey] !== undefined &&
-      mmum[amountKey] !== undefined &&
-      mmum[unitKey] !== undefined
-    ) {
-      const amount =
-        mmum[unitKey] === "kg" ? mmum[amountKey] : mmum[amountKey] / 1000;
-      fermentables.push({
-        FERMENTABLE: {
-          NAME: decode(mmum[nameKey]),
-          AMOUNT: amount,
-        },
-      });
-    }
+        if (name && amountRaw && unit) {
+          const amount = unit === "kg" ? amountRaw : amountRaw / 1000;
+          return {
+            FERMENTABLE: {
+              NAME: decode(name),
+              AMOUNT: amount,
+            },
+          };
+        }
+        return undefined;
+      })
+      .filter((item): item is BeerXMLFermentable => item !== undefined);
   }
 
-  // Misc
+  const fermentables: BeerXMLFermentable[] = extractFermentables(mmum);
+
   const miscEntries = Object.keys(mmum).filter((entryName) =>
     entryName.includes("WeitereZutat")
   );
 
-  // Misc Gaerung
   const gaerungMiscs: BeerXMLMisc[] = [];
 
   const miscGaerungEntries = miscEntries.filter((entryName) =>
@@ -71,7 +69,6 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     }
   }
 
-  // Misc Wuerze
   const wuerzeMiscs: BeerXMLMisc[] = [];
 
   const miscWuerzeEntries = miscEntries.filter((entryName) =>
@@ -323,8 +320,244 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
 }
 
 function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
-  //ToDo: Implement
-  return "" as unknown as BeerXML;
+  function extractFermentables(malze: MMuM_V2["Malze"]): BeerXMLFermentable[] {
+    return malze
+      .map((malz) => {
+        const name = malz.Name;
+        const amountRaw = malz.Menge;
+        const unit = malz.Einheit;
+
+        if (name && amountRaw && unit) {
+          const amount = unit === "kg" ? amountRaw : amountRaw / 1000;
+          return {
+            FERMENTABLE: {
+              NAME: decode(name),
+              AMOUNT: amount,
+            },
+          };
+        }
+        return undefined;
+      })
+      .filter((item): item is BeerXMLFermentable => item !== undefined);
+  }
+
+  function extractMiscFermentables(
+    gaerungMiscs: MMuM_V2["WeitereZutatGaerung"]
+  ): BeerXMLMisc[] {
+    if (gaerungMiscs) {
+      const filteredGaerungsMiscs = gaerungMiscs.filter(
+        (item) => item.Name && item.Menge && item.Einheit
+      );
+
+      return filteredGaerungsMiscs.map((item) => {
+        const amount = item.Einheit === "kg" ? item.Menge : item.Menge / 1000;
+        return {
+          MISC: {
+            NAME: decode(item.Name),
+            AMOUNT: amount,
+            USE: "Primary",
+          },
+        };
+      });
+    } else {
+      return [];
+    }
+  }
+
+  function extractMiscSeasoning(
+    seasoningMiscs: MMuM_V2["Gewuerze_etc"]
+  ): BeerXMLMisc[] {
+    if (seasoningMiscs) {
+      const filteredSeasoningMiscs = seasoningMiscs.filter(
+        (item) => item.Name && item.Menge && item.Einheit && item.Kochzeit
+      );
+
+      return filteredSeasoningMiscs.map((item) => {
+        const amount = item.Einheit === "kg" ? item.Menge : item.Menge / 1000;
+        return {
+          MISC: {
+            NAME: decode(item.Name),
+            AMOUNT: amount,
+            USE: "Boil",
+            TIME: item.Kochzeit,
+          },
+        };
+      });
+    } else {
+      return [];
+    }
+  }
+
+  function extractHops(
+    hops: MMuM_V2["Hopfenkochen"]
+  ): BeerXMLHop[] {
+    if (hops) {
+      const filteredHops = hops.filter(
+        (item) => item.Sorte && item.Menge && item.Alpha
+      );
+
+      return filteredHops.map((item) => {
+        return {
+          HOP: {
+            NAME: decode(item.Sorte),
+            AMOUNT: item.Menge,
+            ALPHA: item.Alpha,
+            TIME: item.Zeit,
+            USE: item.Typ === "Vorderwuerze" ? "First Wort" : undefined, //ToDo: Add Whirlpool
+          },
+        };
+      });
+    } else {
+      return [];
+    }
+  }
+
+  function extractDryHops(
+    dryHops: MMuM_V2["Stopfhopfen"]
+  ): BeerXMLHop[] {
+    if (dryHops) {
+      const filteredDryHops = dryHops.filter(
+        (item) => item.Sorte && item.Menge
+      );
+
+      return filteredDryHops.map((item) => {
+        return {
+          HOP: {
+            NAME: decode(item.Sorte),
+            AMOUNT: item.Menge,
+            USE: "Dry Hop",
+          },
+        };
+      });
+    } else {
+      return [];
+    }
+  }
+
+  //ToDo: Teilmaische_Rastzeit,Teilmaische_Temperatur, Teilmaische_Kochzeit und Form integrieren
+  function extractDecoctionMashSteps(
+    decoctions: MMuM_V2["Dekoktionen"]
+  ): BeerXMLMashStep[] {
+    if (decoctions) {
+      const filteredDecoctions = decoctions.filter((item) => item.Volumen);
+
+      return filteredDecoctions.map((item) => {
+        return {
+          MASH_STEP: {
+            TYPE: "Decoction",
+            INFUSE_AMOUNT: item.Volumen,
+            STEP_TIME: item.Rastzeit,
+            STEP_TEMP: item.Temperatur_ist,
+            END_TEMP: item.Temperatur_resultierend,
+          },
+        };
+      });
+    } else {
+      return [];
+    }
+  }
+
+  function extractInfusionMashSteps(
+    rests: MMuM_V2["Rasten"]
+  ): BeerXMLMashStep[] {
+    const filteredRests = rests.filter((item) => item.Zeit && item.Temperatur);
+
+    return filteredRests.map((item) => {
+      return {
+        MASH_STEP: {
+          TYPE: "Infusion",
+          STEP_TEMP: item.Temperatur,
+          STEP_TIME: item.Zeit,
+          INFUSE_AMOUNT: mmum.Nachguss, //ToDo: Nachguss hier richtig?
+        },
+      };
+    });
+  }
+
+  const fermentables: BeerXMLFermentable[] = extractFermentables(mmum.Malze);
+  const gaerungMiscs: BeerXMLMisc[] = extractMiscFermentables(
+    mmum.WeitereZutatGaerung
+  );
+  const wuerzeMiscs: BeerXMLMisc[] = extractMiscSeasoning(mmum.Gewuerze_etc);
+  const hops: BeerXMLHop[] = extractHops(mmum.Hopfenkochen);
+  const dryHops: BeerXMLHop[] = extractDryHops(mmum.Stopfhopfen);
+  //ToDo: MashIn-Step für Dekoktion anpassen
+  const mashInMashStep: BeerXMLMashStep = {
+    MASH_STEP: {
+      TYPE: "Infusion", //ToDo:
+      STEP_TEMP: mmum.Einmaischtemperatur,
+      STEP_TIME: 0,
+    },
+  };
+  const decoctionMashSteps: BeerXMLMashStep[] = extractDecoctionMashSteps(
+    mmum.Dekoktionen
+  );
+  const infusionMashSteps: BeerXMLMashStep[] = extractInfusionMashSteps(
+    mmum.Rasten
+  );
+  //ToDo: Abmaisch-Step für Dekoktion anpassen
+  const endMashStep: BeerXMLMashStep = {
+    MASH_STEP: {
+      TYPE: "Temperature",
+      STEP_TIME: 0,
+      STEP_TEMP: mmum["Abmaischtemperatur"],
+    },
+  };
+
+  const og = calculateOG(mmum.Stammwuerze);
+  const fg = calculateFG(og, mmum.Endvergaerungsgrad / 100);
+
+  const beerxml_object: BeerXML = {
+    RECIPES: {
+      RECIPE: {
+        NAME: mmum.Name,
+        VERSION: 1, // always set to 1
+        DATE: mmum.Datum,
+        STYLE: {
+          NAME: mmum.Sorte,
+        },
+        BREWER: mmum.Autor,
+        BATCH_SIZE: mmum.Ausschlagwuerze,
+        BOIL_SIZE: mmum.Hauptguss,
+        EFFICIENCY: mmum.Sudhausausbeute,
+        EST_ABV: mmum.Alkohol,
+        EST_COLOR: mmum.Farbe,
+        TASTE_NOTES: mmum.Kurzbeschreibung, // laut php code ist es TASTE_NOTEs, vielleicht doch NOTES?
+        NOTES: mmum.Anmerkung_Autor, // Vielleicht tauschen?
+        CARBONATION: mmum.Karbonisierung,
+        IBU: mmum.Bittere,
+        OG: og,
+        FG: fg,
+        FERMENTABLES: fermentables,
+        MISCS: [...wuerzeMiscs, ...gaerungMiscs],
+        BOIL_TIME: mmum.Kochzeit_Wuerze,
+        HOPS: [...hops, ...dryHops],
+        MASH: {
+          VERSION: 1,
+          MASH_STEPS: [
+            mashInMashStep,
+            ...decoctionMashSteps,
+            ...infusionMashSteps,
+            endMashStep,
+          ],
+        },
+        YEASTS: [
+          {
+            YEAST: {
+              NAME: mmum.Hefe,
+              MIN_TEMPERATURE: Number(mmum.Gaertemperatur.split("-")[0]),
+              MAX_TEMPERATURE: Number(mmum.Gaertemperatur.split("-")[1]),
+              ATTENUATION: Number(mmum.Endvergaerungsgrad),
+              AMOUNT: 1,
+              AMOUNT_IS_WEIGHT: true,
+            },
+          },
+        ],
+      },
+    },
+  };
+
+  return beerxml_object;
 }
 
 function convertMMuMToBeerXML(mmum: MMuM_V1 | MMuM_V2): BeerXML {
@@ -337,7 +570,7 @@ function convertMMuMToBeerXML(mmum: MMuM_V1 | MMuM_V2): BeerXML {
 
 // read MMuM json file
 const inputFolder = "./src/example/";
-const file = "Rezept_Braureka";
+const file = "Mandarin_Flower";
 const outputFolder = "./src/example/output/";
 
 const data = fs.readFileSync(inputFolder + file + ".json");

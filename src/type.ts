@@ -42,7 +42,7 @@ interface BeerXML {
       KEG_PRIMING_FACTOR?: number;
       ABV?: number; // Percent
       EST_ABV: number;
-      EST_COLOR?: string;
+      EST_COLOR?: string | number;
       IBU?: number;
     };
   };
@@ -304,6 +304,7 @@ interface MMuM_V1 {
 }
 
 interface MMuM_V2 {
+  Anmerkung_Autor: string | undefined;
   Rezeptquelle: string;
   ExportVersion: string;
   Name: string;
@@ -347,4 +348,25 @@ interface MMuM_V2 {
   Gaertemperatur: string;
   Endvergaerungsgrad: number;
   Karbonisierung: number;
+  WeitereZutatGaerung: Array<{
+    Name: string;
+    Menge: number;
+    Einheit: string;
+  }>;
+  Gewuerze_etc: Array<{
+    Name: string;
+    Menge: number;
+    Einheit: string;
+    Kochzeit: number;
+  }>;
+  Dekoktionen: Array<{
+    Volumen: number;
+    Rastzeit: number;
+    Temperatur_ist: number;
+    Temperatur_resultierend: number;
+    Form: string;
+    Teilmaische_Rastzeit: number;
+    Teilmaische_Kochzeit: number;
+    Teilmaische_Temperatur: number;
+  }>;
 }
