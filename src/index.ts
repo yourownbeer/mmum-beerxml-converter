@@ -8,6 +8,17 @@ const calculateOG = (stammwuerze: number) =>
 const calculateFG = (og: number, finalAttenuationPercentage: number) =>
   og * (1 - finalAttenuationPercentage) + finalAttenuationPercentage;
 
+function findLowestAndHighestTemperature(temperatureString: string) {
+  const numbers = temperatureString
+    .split("-")
+    .map((number) => parseInt(number, 10));
+
+  const lowestTemp = Math.min(...numbers);
+  const highestTemp = Math.max(...numbers);
+
+  return { lowestTemp, highestTemp };
+}
+
 function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
   function extractFermentables(mmum: MMuM_V1): BeerXMLFermentable[] {
     return Object.keys(mmum)
@@ -236,19 +247,14 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
   for (let i = 1; i <= amountOfInfusionMashSteps; i++) {
     const stepTempKey = `Infusion_Rasttemperatur${i}` as keyof typeof mmum;
     const stepTimeKey = `Infusion_Rastzeit${i}` as keyof typeof mmum;
-    const infuseAmountKey = `Nachguss` as keyof typeof mmum;
 
-    if (
-      mmum[stepTempKey] !== undefined &&
-      mmum[stepTimeKey] !== undefined &&
-      mmum[infuseAmountKey] !== undefined
-    ) {
+    if (mmum[stepTempKey] !== undefined && mmum[stepTimeKey] !== undefined) {
       infusionMashSteps.push({
         MASH_STEP: {
           TYPE: "Infusion",
           STEP_TEMP: mmum[stepTempKey],
           STEP_TIME: mmum[stepTimeKey],
-          INFUSE_AMOUNT: mmum[infuseAmountKey],
+          INFUSE_AMOUNT: mmum.Infusion_Hauptguss,
         },
       });
     }
@@ -281,8 +287,8 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
         EFFICIENCY: mmum.Sudhausausbeute,
         EST_ABV: mmum.Alkohol,
         EST_COLOR: mmum.Farbe,
-        TASTE_NOTES: mmum.Kurzbeschreibung, // laut php code ist es TASTE_NOTEs, vielleicht doch NOTES?
-        NOTES: mmum.Anmerkung_Autor, // Vielleicht tauschen?
+        TASTE_NOTES: decode(mmum.Anmerkung_Autor),
+        NOTES: decode(mmum.Kurzbeschreibung),
         CARBONATION: Number(mmum.Karbonisierung),
         IBU: mmum.Bittere,
         OG: og,
@@ -388,22 +394,29 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
     }
   }
 
-  function extractHops(
-    hops: MMuM_V2["Hopfenkochen"]
-  ): BeerXMLHop[] {
+  function extractHops(hops: MMuM_V2["Hopfenkochen"]): BeerXMLHop[] {
     if (hops) {
       const filteredHops = hops.filter(
         (item) => item.Sorte && item.Menge && item.Alpha
       );
 
       return filteredHops.map((item) => {
+        let useValue: "First Wort" | "Aroma" | undefined;
+        if (item.Typ === "Vorderwuerze") {
+          useValue = "First Wort";
+        } else if (item.Typ === "Whirlpool") {
+          useValue = "Aroma";
+        } else {
+          useValue = undefined;
+        }
+
         return {
           HOP: {
             NAME: decode(item.Sorte),
             AMOUNT: item.Menge,
             ALPHA: item.Alpha,
             TIME: item.Zeit,
-            USE: item.Typ === "Vorderwuerze" ? "First Wort" : undefined, //ToDo: Add Whirlpool
+            USE: useValue,
           },
         };
       });
@@ -412,9 +425,7 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
     }
   }
 
-  function extractDryHops(
-    dryHops: MMuM_V2["Stopfhopfen"]
-  ): BeerXMLHop[] {
+  function extractDryHops(dryHops: MMuM_V2["Stopfhopfen"]): BeerXMLHop[] {
     if (dryHops) {
       const filteredDryHops = dryHops.filter(
         (item) => item.Sorte && item.Menge
@@ -434,7 +445,8 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
     }
   }
 
-  //ToDo: Teilmaische_Rastzeit,Teilmaische_Temperatur, Teilmaische_Kochzeit und Form integrieren
+  //ToDo: Teilmaische_Rastzeit,Teilmaische_Temperatur, Teilmaische_Kochzeit integrieren
+  //ToDo: "Einmaisch_Zubruehwasser_gesamt" integrieren
   function extractDecoctionMashSteps(
     decoctions: MMuM_V2["Dekoktionen"]
   ): BeerXMLMashStep[] {
@@ -444,10 +456,11 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
       return filteredDecoctions.map((item) => {
         return {
           MASH_STEP: {
+            NAME: item.Form,
             TYPE: "Decoction",
-            INFUSE_AMOUNT: item.Volumen,
+            DECOCTION_AMT: item.Volumen,
             STEP_TIME: item.Rastzeit,
-            STEP_TEMP: item.Temperatur_ist,
+            STEP_TEMP: item.Temperatur_ist ?? item.Teilmaische_Temperatur,
             END_TEMP: item.Temperatur_resultierend,
           },
         };
@@ -468,7 +481,7 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
           TYPE: "Infusion",
           STEP_TEMP: item.Temperatur,
           STEP_TIME: item.Zeit,
-          INFUSE_AMOUNT: mmum.Nachguss, //ToDo: Nachguss hier richtig?
+          INFUSE_AMOUNT: mmum.Hauptguss,
         },
       };
     });
@@ -481,21 +494,22 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
   const wuerzeMiscs: BeerXMLMisc[] = extractMiscSeasoning(mmum.Gewuerze_etc);
   const hops: BeerXMLHop[] = extractHops(mmum.Hopfenkochen);
   const dryHops: BeerXMLHop[] = extractDryHops(mmum.Stopfhopfen);
-  //ToDo: MashIn-Step für Dekoktion anpassen
+
   const mashInMashStep: BeerXMLMashStep = {
     MASH_STEP: {
-      TYPE: "Infusion", //ToDo:
-      STEP_TEMP: mmum.Einmaischtemperatur,
+      TYPE: "Infusion",
+      STEP_TEMP: mmum.Einmaischtemperatur, //ToDo: Einmaischtemperatur für Dekoktion anpassen
       STEP_TIME: 0,
     },
   };
+
   const decoctionMashSteps: BeerXMLMashStep[] = extractDecoctionMashSteps(
     mmum.Dekoktionen
   );
   const infusionMashSteps: BeerXMLMashStep[] = extractInfusionMashSteps(
     mmum.Rasten
   );
-  //ToDo: Abmaisch-Step für Dekoktion anpassen
+
   const endMashStep: BeerXMLMashStep = {
     MASH_STEP: {
       TYPE: "Temperature",
@@ -506,6 +520,9 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
 
   const og = calculateOG(mmum.Stammwuerze);
   const fg = calculateFG(og, mmum.Endvergaerungsgrad / 100);
+  const { lowestTemp, highestTemp } = findLowestAndHighestTemperature(
+    mmum.Gaertemperatur
+  );
 
   const beerxml_object: BeerXML = {
     RECIPES: {
@@ -522,8 +539,8 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
         EFFICIENCY: mmum.Sudhausausbeute,
         EST_ABV: mmum.Alkohol,
         EST_COLOR: mmum.Farbe,
-        TASTE_NOTES: mmum.Kurzbeschreibung, // laut php code ist es TASTE_NOTEs, vielleicht doch NOTES?
-        NOTES: mmum.Anmerkung_Autor, // Vielleicht tauschen?
+        TASTE_NOTES: decode(mmum.Anmerkung_Autor),
+        NOTES: decode(mmum.Kurzbeschreibung),
         CARBONATION: mmum.Karbonisierung,
         IBU: mmum.Bittere,
         OG: og,
@@ -544,9 +561,9 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
         YEASTS: [
           {
             YEAST: {
-              NAME: mmum.Hefe,
-              MIN_TEMPERATURE: Number(mmum.Gaertemperatur.split("-")[0]),
-              MAX_TEMPERATURE: Number(mmum.Gaertemperatur.split("-")[1]),
+              NAME: decode(mmum.Hefe),
+              MIN_TEMPERATURE: lowestTemp,
+              MAX_TEMPERATURE: highestTemp,
               ATTENUATION: Number(mmum.Endvergaerungsgrad),
               AMOUNT: 1,
               AMOUNT_IS_WEIGHT: true,
@@ -576,9 +593,12 @@ const outputFolder = "./src/example/output/";
 const data = fs.readFileSync(inputFolder + file + ".json");
 const mmumFile = JSON.parse(data.toString());
 const beerXML = convertMMuMToBeerXML(mmumFile);
-const builder = new XMLBuilder({ oneListGroup: true, format: true });
+const builder = new XMLBuilder({
+  processEntities: true,
+  oneListGroup: true,
+  format: true,
+});
 const beerXMLFile = builder.build(beerXML);
 fs.writeFileSync(outputFolder + file + ".xml", beerXMLFile, "utf8");
-console.log(beerXML);
 
 module.exports = convertMMuMToBeerXML;
