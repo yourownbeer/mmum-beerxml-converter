@@ -1,6 +1,13 @@
-import fs from "fs";
 import { decode } from "html-entities";
-import { XMLBuilder } from "fast-xml-parser";
+import {
+  MMuM_V1,
+  BeerXML,
+  BeerXMLFermentable,
+  BeerXMLMisc,
+  BeerXMLHop,
+  BeerXMLMashStep,
+  MMuM_V2,
+} from "./type";
 
 const calculateOG = (stammwuerze: number) =>
   1 + stammwuerze / (258.6 - (stammwuerze / 258.2) * 227.1);
@@ -585,6 +592,8 @@ function convertMMuMToBeerXML(mmum: MMuM_V1 | MMuM_V2): BeerXML {
   }
 }
 
+export default convertMMuMToBeerXML;
+
 // read MMuM json file
 // const inputFolder = "./src/example/";
 // const file = "Mandarin_Flower";
@@ -600,5 +609,3 @@ function convertMMuMToBeerXML(mmum: MMuM_V1 | MMuM_V2): BeerXML {
 // });
 // const beerXMLFile = builder.build(beerXML);
 // fs.writeFileSync(outputFolder + file + ".xml", beerXMLFile, "utf8");
-
-export default convertMMuMToBeerXML;

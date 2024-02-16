@@ -1,18 +1,33 @@
 {
   "name": "mmum-beerxml-converter-beta",
-  "version": "0.9.4",
-  "description": "",
+  "version": "0.10.0",
+  "description": "Library for converting MMuM.json to BeerXML",
   "type": "module",
-  "main": "src/index.ts",
-  "typings": ".src/type.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./type": "./src/type.ts"
+  },
+  "types": "./src/type.ts",
   "scripts": {
     "build": "tsc",
     "dev": "nodemon",
     "start": "node dist/index.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": {
+    "name": "yourownbeer",
+    "email": "brew@yourownbeer.de",
+    "url": "https://www.yourownbeer.de"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourownbeer/mmum-beerxml-converter.git"
+  },
+  "homepage": "https://github.com/yourownbeer/mmum-beerxml-converter#readme",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.10.4",
     "nodemon": "^3.0.2",
@@ -20,7 +35,6 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "fast-xml-parser": "^4.3.2",
     "html-entities": "^2.4.0"
   }
 }

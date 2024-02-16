@@ -1,6 +1,6 @@
 // http://www.beerxml.com/beerxml.htm
 
-interface BeerXML {
+export interface BeerXML {
   RECIPES: {
     RECIPE: {
       NAME: string;
@@ -48,7 +48,7 @@ interface BeerXML {
   };
 }
 
-interface BeerXMLHop {
+export interface BeerXMLHop {
   HOP: {
     NAME: string;
     VERSION?: number;
@@ -70,7 +70,7 @@ interface BeerXMLHop {
   };
 }
 
-interface BeerXMLFermentable {
+export interface BeerXMLFermentable {
   FERMENTABLE: {
     NAME: string;
     VERSION?: number;
@@ -92,7 +92,7 @@ interface BeerXMLFermentable {
   };
 }
 
-interface BeerXMLYeast {
+export interface BeerXMLYeast {
   YEAST: {
     NAME: string;
     VERSION?: number;
@@ -114,7 +114,7 @@ interface BeerXMLYeast {
   };
 }
 
-interface BeerXMLMisc {
+export interface BeerXMLMisc {
   MISC: {
     NAME: string;
     VERSION?: number;
@@ -128,7 +128,7 @@ interface BeerXMLMisc {
   };
 }
 
-interface BeerXMLMash {
+export interface BeerXMLMash {
   NAME?: string;
   VERSION?: number;
   GRAIN_TEMP?: number; // Temperature (C)
@@ -142,7 +142,7 @@ interface BeerXMLMash {
   EQUIP_ADJUST?: boolean;
 }
 
-interface BeerXMLMashStep {
+export interface BeerXMLMashStep {
   MASH_STEP: {
     NAME?: string;
     VERSION?: number;
@@ -155,7 +155,7 @@ interface BeerXMLMashStep {
   };
 }
 
-interface BeerXMLStyle {
+export interface BeerXMLStyle {
   NAME: string;
   CATEGORY?: string;
   VERSION?: number;
@@ -183,7 +183,7 @@ interface BeerXMLStyle {
 
 //Mmum
 
-interface MMuM_V1 {
+export interface MMuM_V1 {
   Anmerkung_Autor: any;
   Rezeptquelle: string;
   ExportVersion: string;
@@ -303,7 +303,7 @@ interface MMuM_V1 {
   WeitereZutat_Wuerze_6_Einheit: string;
 }
 
-interface MMuM_V2 {
+export interface MMuM_V2 {
   Anmerkung_Autor: string | undefined;
   Rezeptquelle: string;
   ExportVersion: string;
