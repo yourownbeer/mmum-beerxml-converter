@@ -586,19 +586,19 @@ function convertMMuMToBeerXML(mmum: MMuM_V1 | MMuM_V2): BeerXML {
 }
 
 // read MMuM json file
-const inputFolder = "./src/example/";
-const file = "Mandarin_Flower";
-const outputFolder = "./src/example/output/";
+// const inputFolder = "./src/example/";
+// const file = "Mandarin_Flower";
+// const outputFolder = "./src/example/output/";
 
-const data = fs.readFileSync(inputFolder + file + ".json");
-const mmumFile = JSON.parse(data.toString());
-const beerXML = convertMMuMToBeerXML(mmumFile);
-const builder = new XMLBuilder({
-  processEntities: true,
-  oneListGroup: true,
-  format: true,
-});
-const beerXMLFile = builder.build(beerXML);
-fs.writeFileSync(outputFolder + file + ".xml", beerXMLFile, "utf8");
+// const data = fs.readFileSync(inputFolder + file + ".json");
+// const mmumFile = JSON.parse(data.toString());
+// const beerXML = convertMMuMToBeerXML(mmumFile);
+// const builder = new XMLBuilder({
+//   processEntities: true,
+//   oneListGroup: true,
+//   format: true,
+// });
+// const beerXMLFile = builder.build(beerXML);
+// fs.writeFileSync(outputFolder + file + ".xml", beerXMLFile, "utf8");
 
-module.exports = convertMMuMToBeerXML;
+export default convertMMuMToBeerXML;

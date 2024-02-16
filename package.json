@@ -1,9 +1,9 @@
 {
-  "name": "mmum-beerxml-converter",
-  "version": "1.0.0",
+  "name": "mmum-beerxml-converter-beta",
+  "version": "0.9.1",
   "description": "",
   "type": "module",
-  "main": "index.js",
+  "main": "src/index.ts",
   "scripts": {
     "build": "tsc",
     "dev": "nodemon",
