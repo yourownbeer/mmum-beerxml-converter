@@ -18,7 +18,12 @@ const calculateFG = (og: number, finalAttenuationPercentage: number) =>
 function findLowestAndHighestTemperature(temperatureString: string) {
   const numbers = temperatureString
     .split("-")
-    .map((number) => parseInt(number, 10));
+    .map((number) => parseInt(number, 10))
+    .filter((number) => !isNaN(number));
+
+  if (numbers.length === 0) {
+    return { lowestTemp: undefined, highestTemp: undefined };
+  }
 
   const lowestTemp = Math.min(...numbers);
   const highestTemp = Math.max(...numbers);
@@ -526,7 +531,9 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
   };
 
   const og = calculateOG(mmum.Stammwuerze);
-  const fg = calculateFG(og, mmum.Endvergaerungsgrad / 100);
+  const fg = mmum.Endvergaerungsgrad
+    ? calculateFG(og, mmum.Endvergaerungsgrad / 100)
+    : undefined;
   const { lowestTemp, highestTemp } = findLowestAndHighestTemperature(
     mmum.Gaertemperatur
   );
@@ -551,7 +558,7 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
         CARBONATION: mmum.Karbonisierung,
         IBU: mmum.Bittere,
         OG: og,
-        FG: fg,
+        ...(fg !== undefined && { FG: fg }), // Only include FG if it's defined
         FERMENTABLES: fermentables,
         MISCS: [...wuerzeMiscs, ...gaerungMiscs],
         BOIL_TIME: mmum.Kochzeit_Wuerze,
@@ -569,9 +576,13 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
           {
             YEAST: {
               NAME: decode(mmum.Hefe),
-              MIN_TEMPERATURE: lowestTemp,
-              MAX_TEMPERATURE: highestTemp,
-              ATTENUATION: Number(mmum.Endvergaerungsgrad),
+              ...(lowestTemp !== undefined && { MIN_TEMPERATURE: lowestTemp }),
+              ...(highestTemp !== undefined && {
+                MAX_TEMPERATURE: highestTemp,
+              }),
+              ...(mmum.Endvergaerungsgrad !== undefined && {
+                ATTENUATION: Number(mmum.Endvergaerungsgrad),
+              }),
               AMOUNT: 1,
               AMOUNT_IS_WEIGHT: true,
             },
