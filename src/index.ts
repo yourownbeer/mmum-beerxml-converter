@@ -583,7 +583,7 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
               ...(mmum.Endvergaerungsgrad !== undefined && {
                 ATTENUATION: Number(mmum.Endvergaerungsgrad),
               }),
-              AMOUNT: 1,
+              AMOUNT: 0.01,
               AMOUNT_IS_WEIGHT: true,
             },
           },
