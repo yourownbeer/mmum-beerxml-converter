@@ -143,7 +143,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
       vwhHops.push({
         HOP: {
           NAME: decode(mmum[nameKey]),
-          AMOUNT: mmum[amountKey],
+          AMOUNT: mmum[amountKey] / 1000,
           ALPHA: mmum[alphaKey],
           USE: "First Wort",
         },
@@ -173,7 +173,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
       usualHops.push({
         HOP: {
           NAME: decode(mmum[sortKey]),
-          AMOUNT: mmum[amountKey],
+          AMOUNT: mmum[amountKey] / 1000,
           ALPHA: mmum[alphaKey],
           TIME: mmum[timeKey],
         },
@@ -196,7 +196,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
       dryHops.push({
         HOP: {
           NAME: decode(mmum[sortKey]),
-          AMOUNT: mmum[amountKey],
+          AMOUNT: mmum[amountKey] / 1000,
           USE: "Dry Hop",
         },
       });
@@ -420,7 +420,7 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
         return {
           HOP: {
             NAME: decode(item.Sorte),
-            AMOUNT: item.Menge,
+            AMOUNT: item.Menge / 1000,
             ALPHA: item.Alpha,
             TIME: item.Zeit,
             USE: useValue,
@@ -442,7 +442,7 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
         return {
           HOP: {
             NAME: decode(item.Sorte),
-            AMOUNT: item.Menge,
+            AMOUNT: item.Menge / 1000,
             USE: "Dry Hop",
           },
         };
