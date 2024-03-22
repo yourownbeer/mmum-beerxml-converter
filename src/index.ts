@@ -550,7 +550,7 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
         BREWER: mmum.Autor,
         BATCH_SIZE: mmum.Ausschlagwuerze,
         BOIL_SIZE: mmum.Hauptguss,
-        EFFICIENCY: mmum.Sudhausausbeute,
+        EFFICIENCY: mmum.Sudhausausbeute ?? 65, // Default value if there is no value in mmum
         EST_ABV: mmum.Alkohol,
         EST_COLOR: mmum.Farbe,
         TASTE_NOTES: decode(mmum.Anmerkung_Autor),
