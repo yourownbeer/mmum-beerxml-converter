@@ -240,7 +240,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     ) {
       decoctionMashSteps.push({
         MASH_STEP: {
-          NAME: "Decoction " + i,
+          NAME: "Decoction " + i + 1,
           TYPE: "Decoction",
           INFUSE_AMOUNT: mmum[volumeKey],
           STEP_TIME: mmum[restTimeKey],
@@ -265,7 +265,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     if (mmum[stepTempKey] !== undefined && mmum[stepTimeKey] !== undefined) {
       infusionMashSteps.push({
         MASH_STEP: {
-          NAME: "Infusion " + i,
+          NAME: "Infusion " + i + 1,
           TYPE: "Infusion",
           STEP_TEMP: mmum[stepTempKey],
           STEP_TIME: mmum[stepTimeKey],
@@ -472,7 +472,7 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
       return filteredDecoctions.map((item, index) => {
         return {
           MASH_STEP: {
-            NAME: item.Form + " " + index,
+            NAME: item.Form + " " + index + 1,
             TYPE: "Decoction",
             DECOCTION_AMT: item.Volumen,
             STEP_TIME: item.Rastzeit,
@@ -494,7 +494,7 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
     return filteredRests.map((item, index) => {
       return {
         MASH_STEP: {
-          NAME: "Infusion " + index,
+          NAME: "Infusion " + index + 1,
           TYPE: "Infusion",
           STEP_TEMP: item.Temperatur,
           STEP_TIME: item.Zeit,
