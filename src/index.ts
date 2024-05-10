@@ -211,6 +211,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
   // MashIn Mash Step
   const mashInMashStep: BeerXMLMashStep = {
     MASH_STEP: {
+      NAME: "Einmaischen",
       TYPE: "Infusion",
       STEP_TEMP: mmum["Infusion_Einmaischtemperatur"],
       STEP_TIME: 0,
@@ -239,6 +240,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     ) {
       decoctionMashSteps.push({
         MASH_STEP: {
+          NAME: "Decoction " + i,
           TYPE: "Decoction",
           INFUSE_AMOUNT: mmum[volumeKey],
           STEP_TIME: mmum[restTimeKey],
@@ -263,6 +265,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     if (mmum[stepTempKey] !== undefined && mmum[stepTimeKey] !== undefined) {
       infusionMashSteps.push({
         MASH_STEP: {
+          NAME: "Infusion " + i,
           TYPE: "Infusion",
           STEP_TEMP: mmum[stepTempKey],
           STEP_TIME: mmum[stepTimeKey],
@@ -275,6 +278,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
   // Abmaisch Mash Step
   const endMashStep: BeerXMLMashStep = {
     MASH_STEP: {
+      NAME: "Abmaischen",
       TYPE: "Temperature",
       STEP_TIME: 0,
       STEP_TEMP: Number(mmum["Abmaischtemperatur"]),
@@ -465,10 +469,10 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
     if (decoctions) {
       const filteredDecoctions = decoctions.filter((item) => item.Volumen);
 
-      return filteredDecoctions.map((item) => {
+      return filteredDecoctions.map((item, index) => {
         return {
           MASH_STEP: {
-            NAME: item.Form,
+            NAME: item.Form + " " + index,
             TYPE: "Decoction",
             DECOCTION_AMT: item.Volumen,
             STEP_TIME: item.Rastzeit,
@@ -487,9 +491,10 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
   ): BeerXMLMashStep[] {
     const filteredRests = rests.filter((item) => item.Zeit && item.Temperatur);
 
-    return filteredRests.map((item) => {
+    return filteredRests.map((item, index) => {
       return {
         MASH_STEP: {
+          NAME: "Infusion " + index,
           TYPE: "Infusion",
           STEP_TEMP: item.Temperatur,
           STEP_TIME: item.Zeit,
@@ -509,6 +514,7 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
 
   const mashInMashStep: BeerXMLMashStep = {
     MASH_STEP: {
+      NAME: "Einmaischen",
       TYPE: "Infusion",
       STEP_TEMP: mmum.Einmaischtemperatur, //ToDo: Einmaischtemperatur für Dekoktion anpassen
       STEP_TIME: 0,
@@ -524,6 +530,7 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
 
   const endMashStep: BeerXMLMashStep = {
     MASH_STEP: {
+      NAME: "Abmaischen",
       TYPE: "Temperature",
       STEP_TIME: 0,
       STEP_TEMP: mmum["Abmaischtemperatur"],
