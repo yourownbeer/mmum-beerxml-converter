@@ -1,6 +1,6 @@
 {
   "name": "mmum-beerxml-converter",
-  "version": "0.10.8",
+  "version": "0.10.10",
   "description": "Library for converting MMuM.json to BeerXML",
   "type": "module",
   "exports": {
