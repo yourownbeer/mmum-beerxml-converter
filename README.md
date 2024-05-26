@@ -6,4 +6,4 @@ Mehr zum Thema BeerXML kannst du unserem [Blog-Post](https://www.yourownbeer.de/
 
 Weitere Dokumentation folgt. 
 
-[Demo des Converters](https://yob-mmum-converter-demo.vercel.app/)
+[Demo des Converters](https://www.yourownbeer.de/tools/mmum-beerxml)

@@ -252,7 +252,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
   }
 
   // Infusion Rast Mash Steps
-  const infusionMashSteps: BeerXMLMashStep[] = [];
+  const temperatureMashSteps: BeerXMLMashStep[] = [];
 
   const infusionMashStepEntries = Object.keys(mmum).filter((entryName) =>
     entryName.includes("Infusion_Rast")
@@ -263,10 +263,10 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
     const stepTimeKey = `Infusion_Rastzeit${i}` as keyof typeof mmum;
 
     if (mmum[stepTempKey] !== undefined && mmum[stepTimeKey] !== undefined) {
-      infusionMashSteps.push({
+      temperatureMashSteps.push({
         MASH_STEP: {
-          NAME: "Infusion " + (i + 1),
-          TYPE: "Infusion",
+          NAME: "Temperature " + (i + 1),
+          TYPE: "Temperature",
           STEP_TEMP: mmum[stepTempKey],
           STEP_TIME: mmum[stepTimeKey],
           INFUSE_AMOUNT: mmum.Infusion_Hauptguss,
@@ -318,7 +318,7 @@ function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
           MASH_STEPS: [
             mashInMashStep,
             ...decoctionMashSteps,
-            ...infusionMashSteps,
+            ...temperatureMashSteps,
             endMashStep,
           ],
         },
@@ -486,7 +486,7 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
     }
   }
 
-  function extractInfusionMashSteps(
+  function extractTemperatureMashSteps(
     rests: MMuM_V2["Rasten"]
   ): BeerXMLMashStep[] {
     const filteredRests = rests.filter((item) => item.Zeit && item.Temperatur);
@@ -494,8 +494,8 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
     return filteredRests.map((item, index) => {
       return {
         MASH_STEP: {
-          NAME: "Infusion " + (index + 1),
-          TYPE: "Infusion",
+          NAME: "Temperature " + (index + 1),
+          TYPE: "Temperature",
           STEP_TEMP: item.Temperatur,
           STEP_TIME: item.Zeit,
           INFUSE_AMOUNT: mmum.Hauptguss,
@@ -524,7 +524,7 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
   const decoctionMashSteps: BeerXMLMashStep[] = extractDecoctionMashSteps(
     mmum.Dekoktionen
   );
-  const infusionMashSteps: BeerXMLMashStep[] = extractInfusionMashSteps(
+  const temperatureMashSteps: BeerXMLMashStep[] = extractTemperatureMashSteps(
     mmum.Rasten
   );
 
@@ -575,7 +575,7 @@ function convertV2ToBeerXML(mmum: MMuM_V2): BeerXML {
           MASH_STEPS: [
             mashInMashStep,
             ...decoctionMashSteps,
-            ...infusionMashSteps,
+            ...temperatureMashSteps,
             endMashStep,
           ],
         },
