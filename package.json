@@ -1,6 +1,6 @@
 {
   "name": "mmum-beerxml-converter",
-  "version": "0.10.13",
+  "version": "0.10.15",
   "description": "Library for converting MMuM.json to BeerXML",
   "type": "module",
   "exports": {
@@ -20,7 +20,7 @@
   "author": {
     "name": "yourownbeer",
     "email": "brew@yourownbeer.de",
-    "url": "https://www.yourownbeer.de"
+    "url": "https://www.yourownbeer.com"
   },
   "repository": {
     "type": "git",

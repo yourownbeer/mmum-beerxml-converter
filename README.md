@@ -2,8 +2,11 @@
 Mit dem MMuM-BeerXML-Converter lassen sich Bier-Rezepte im MMuM.json-Format von [MaischeMalzundMehr](https://www.maischemalzundmehr.de/) in BeerXML umwandeln. 
 Da das BeerXML-Format international genutzt wird, kann man seine Bier-Rezepte auf so gut wie allen Hobbybrauer-Seiten nutzen.
 
-Mehr zum Thema BeerXML kannst du unserem [Blog-Post](https://www.yourownbeer.de/blog/beerxml) entnehmen.
+Mehr zum Thema BeerXML kannst du unserem [Blog-Post](https://www.yourownbeer.com/blog/beerxml) entnehmen.
 
 Weitere Dokumentation folgt. 
 
-[Demo des Converters](https://www.yourownbeer.de/tools/mmum-beerxml)
+[Demo des Converters](https://www.yourownbeer.com/tools/mmum-beerxml)
+
+
+Erstellt von [YourOwnBeer](https://www.yourownbeer.com)
