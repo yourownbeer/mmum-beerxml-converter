@@ -7,7 +7,11 @@ import {
   BeerXMLHop,
   BeerXMLMashStep,
 } from "./type";
-import { calculateFG, calculateOG } from "./utils";
+import {
+  calculateFG,
+  calculateOG,
+  findLowestAndHighestTemperature,
+} from "./utils";
 
 export function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
   function extractFermentables(mmum: MMuM_V1): BeerXMLFermentable[] {
@@ -161,7 +165,7 @@ export function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
           NAME: decode(mmum[sortKey]),
           AMOUNT: mmum[amountKey] / 1000,
           ALPHA: mmum[alphaKey],
-          TIME: mmum[timeKey],
+          TIME: mmum[timeKey] === "Whirlpool" ? 0 : mmum[timeKey],
         },
       });
     }
@@ -271,6 +275,9 @@ export function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
   const fg = mmum.Endvergaerungsgrad
     ? calculateFG(og, Number(mmum.Endvergaerungsgrad) / 100)
     : undefined;
+  const { lowestTemp, highestTemp } = findLowestAndHighestTemperature(
+    mmum.Gaertemperatur
+  );
 
   const beerxml_object: BeerXML = {
     RECIPES: {
@@ -310,8 +317,10 @@ export function convertV1ToBeerXML(mmum: MMuM_V1): BeerXML {
           {
             YEAST: {
               NAME: mmum.Hefe,
-              MIN_TEMPERATURE: Number(mmum.Gaertemperatur.split("-")[0]),
-              MAX_TEMPERATURE: Number(mmum.Gaertemperatur.split("-")[1]),
+              ...(lowestTemp !== undefined && { MIN_TEMPERATURE: lowestTemp }),
+              ...(highestTemp !== undefined && {
+                MAX_TEMPERATURE: highestTemp,
+              }),
               ATTENUATION: Number(mmum.Endvergaerungsgrad),
               AMOUNT: 0.01,
               AMOUNT_IS_WEIGHT: true,
